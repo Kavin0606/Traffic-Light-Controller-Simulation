@@ -1,0 +1,77 @@
+class TrafficController {
+
+    private int currentDirection = 0;
+
+    private final String[] directions = {
+        "NORTH", "EAST", "SOUTH", "WEST"
+    };
+
+    // Synchronized method to control traffic signals
+    public synchronized void controlTraffic(int direction)
+            throws InterruptedException {
+
+        String name = directions[direction];
+
+        // Only one direction can be green at a time
+        if (currentDirection != direction) {
+            currentDirection = direction;
+        }
+
+        System.out.println("\n" + name + " Signal: GREEN");
+        System.out.println("Other signals: RED");
+
+        Thread.sleep(2000);
+
+        System.out.println(name + " Signal: YELLOW");
+        Thread.sleep(1000);
+
+        System.out.println(name + " Signal: RED");
+        System.out.println("-------------------------");
+
+        // Allow the next direction to take control
+        currentDirection = (direction + 1) % 4;
+    }
+}
+
+class TrafficLight extends Thread {
+
+    private final TrafficController controller;
+    private final int direction;
+
+    TrafficLight(TrafficController controller, int direction) {
+        this.controller = controller;
+        this.direction = direction;
+    }
+
+    @Override
+    public void run() {
+        try {
+            for (int i = 0; i < 2; i++) {
+                controller.controlTraffic(direction);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+
+public class TrafficLightSimulation {
+
+    public static void main(String[] args) {
+
+        TrafficController controller = new TrafficController();
+
+        TrafficLight north = new TrafficLight(controller, 0);
+        TrafficLight east  = new TrafficLight(controller, 1);
+        TrafficLight south = new TrafficLight(controller, 2);
+        TrafficLight west  = new TrafficLight(controller, 3);
+
+        System.out.println("TRAFFIC LIGHT CONTROLLER");
+        System.out.println("========================");
+
+        north.start();
+        east.start();
+        south.start();
+        west.start();
+    }
+}
